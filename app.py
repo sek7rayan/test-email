@@ -353,15 +353,14 @@ HTML_TEMPLATE = '''
 '''
 
 def parse_logs():
-    """Parse les logs pour les statistiques"""
+    """Parse les logs pour les statistiques - RETOURNE 5 VALEURES SEULEMENT"""
     if not os.path.exists(LOG_FILE):
-        return [], 0, 0, 0, 0, 0
+        return [], 0, 0, 0, 0  # 5 valeurs !
     
     with open(LOG_FILE, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     
     logs_data = []
-    ips = set()
     campaigns = set()
     last_24h_count = 0
     real_opens_count = 0
@@ -417,12 +416,11 @@ def parse_logs():
                 'is_real': is_real
             })
             
-            ips.add(ip)
-            
         except Exception as e:
             print(f"Error parsing log line: {e}")
             continue
     
+    # RETOURNE EXACTEMENT 5 VALEURS
     return logs_data, len(lines), real_opens_count, len(campaigns), last_24h_count
 
 @app.route('/')
@@ -430,6 +428,7 @@ def home():
     base_url = request.url_root.rstrip('/')
     pixel_url = f"{base_url}/pixel"
     
+    # CORRECT : parse_logs() retourne 5 valeurs maintenant
     logs_data, total, real_opens, campaigns, last_24h = parse_logs()
     
     return render_template_string(HTML_TEMPLATE,
@@ -486,7 +485,6 @@ def track_pixel(campaign=None):
     
     # 4. Obtenir d'autres informations
     referer = request.headers.get('Referer', 'Direct')
-    accept_language = request.headers.get('Accept-Language', '')
     
     # 5. Format du log amélioré
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
